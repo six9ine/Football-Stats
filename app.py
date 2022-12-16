@@ -1,5 +1,7 @@
 import http.client
-from flask import Flask, render_template
+import sys
+from flask import Flask, render_template, request, redirect, url_for
+from functions import player_data
 
 app = Flask(__name__)
 
@@ -10,20 +12,30 @@ def welcome():
 
 @app.route('/teams')
 def teams():
-    # conn = http.client.HTTPSConnection("v3.football.api-sports.io")
-    #
-    # headers = {
-    #     'x-rapidapi-host': "v3.football.api-sports.io",
-    #     'x-rapidapi-key': "7b5bd0444b772ea5848eebc8a730f77a"
-    # }
-    #
-    #
-    #
-    # conn.request("GET", "/teams/statistics", headers=headers)
-    #
-    # res = conn.getresponse()
-    # data = res.read()
-
-
-
     return render_template("teams.html")
+
+
+@app.route('/players', methods = ["POST","GET"])
+def players_stats():
+    try:
+        if request.method == "POST":
+            name = request.form["name"]
+            league_name = request.form["league_name"]
+            season = request.form["season"]
+            country = request.form["country"]
+            league_id = player_data.get_league_id(league_name,country)
+            print(league_id)
+            data = player_data.player(name,season,league_id)
+            print(data)
+            return render_template("view_player.html",name=name,data=data,season=season)
+        else:
+            return render_template("players.html")
+    except:
+        return render_template("error.html")
+
+
+
+
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=3000)
